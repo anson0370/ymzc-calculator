@@ -69,7 +69,7 @@ export default function Home() {
     const fullWaterTime = new Date(baseDate);
     const lastWaterTime = new Date(baseDate);
 
-    const realHarvestDuration = realHarvestTime(toHarvestDuration, waterKeepDuration);
+    const realHarvestDuration = realHarvestTime(toHarvestDuration, selectedVegetable.waterKeepTime - waterKeepDuration);
 
     fullWaterTime.setMinutes(fullWaterTime.getMinutes() + realHarvestDuration);
     lastWaterTime.setMinutes(lastWaterTime.getMinutes() + realHarvestDuration - Math.round(selectedVegetable.waterKeepTime * 0.1));
@@ -129,7 +129,7 @@ export default function Home() {
             <h2 className="text-lg border-b">计算在途收获时间</h2>
             <div className="flex flex-col items-start gap-y-2 sm:flex-row sm:items-center sm:gap-x-2">
               <div className="flex items-center gap-x-2">
-                <Label>成熟时间</Label>
+                <Label>待成熟时间</Label>
                 <TimeInput mode="duration" onDurationChange={setToHarvestDuration} />
               </div>
               <div className="flex items-center gap-x-2">
