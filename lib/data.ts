@@ -1,8 +1,4 @@
-export type Vegetable = {
-  name: string;
-  harvestTime: number;
-  waterKeepTime: number;
-}
+import { Vegetable } from "./types";
 
 const timebase60 = {
   harvestTime: 60,
@@ -29,7 +25,7 @@ const timebase1920 = {
   waterKeepTime: 640,
 };
 
-export const vegetables = [
+export const vegetables: Vegetable[] = [
   {
     name: '1小时作物',
     ...timebase60,
