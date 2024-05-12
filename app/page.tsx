@@ -108,12 +108,15 @@ export default function Home() {
             </div>
             <h2 className="text-lg border-b">计算新种收获时间</h2>
             <div>选择基准时间</div>
-            <div className="flex items-center gap-x-2">
-              <Switch id="use-current-time" checked={useCurrentTime} onCheckedChange={setUseCurrentTime} />
-              <Label htmlFor="use-current-time">使用当前时间</Label>
-              <Separator orientation="vertical" className="h-4"/>
-              <Label>自选时间</Label>
-              <TimeInput mode="time" disabled={useCurrentTime} onTimeChange={setBaseTime} />
+            <div className="flex flex-col items-start gap-y-2 sm:flex-row sm:items-center sm:gap-x-2">
+              <div className="flex items-center gap-x-2">
+                <Label htmlFor="use-current-time">使用当前时间</Label>
+                <Switch id="use-current-time" checked={useCurrentTime} onCheckedChange={setUseCurrentTime} />
+              </div>
+              <div className="flex items-center gap-x-2">
+                <Label>自选时间</Label>
+                <TimeInput mode="time" disabled={useCurrentTime} onTimeChange={setBaseTime} />
+              </div>
             </div>
             <Button onClick={calculateHarvestTime}>算TMD</Button>
             {harvestTimeResult && (
@@ -124,12 +127,15 @@ export default function Home() {
               </div>
             )}
             <h2 className="text-lg border-b">计算在途收获时间</h2>
-            <div className="flex items-center gap-x-2">
-              <Label>成熟时间</Label>
-              <TimeInput mode="duration" onDurationChange={setToHarvestDuration} />
-              <Separator orientation="vertical" className="h-4"/>
-              <Label>水分保持时间</Label>
-              <TimeInput mode="duration" onDurationChange={setWaterKeepDuration} />
+            <div className="flex flex-col items-start gap-y-2 sm:flex-row sm:items-center sm:gap-x-2">
+              <div className="flex items-center gap-x-2">
+                <Label>成熟时间</Label>
+                <TimeInput mode="duration" onDurationChange={setToHarvestDuration} />
+              </div>
+              <div className="flex items-center gap-x-2">
+                <Label>水分保持时间</Label>
+                <TimeInput mode="duration" onDurationChange={setWaterKeepDuration} />
+              </div>
             </div>
             <Button onClick={calculateGoingToHarvestTime}>算TMD</Button>
             {goingToharvestTimeResult && (
