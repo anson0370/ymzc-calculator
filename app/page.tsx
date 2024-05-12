@@ -1,112 +1,145 @@
-import Image from "next/image";
+'use client';
+
+import { DataCeil } from "@/components/data-comps";
+import { Button } from "@/components/shadcn/ui/button";
+import { Label } from "@/components/shadcn/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/shadcn/ui/select";
+import { Separator } from "@/components/shadcn/ui/separator";
+import { Switch } from "@/components/shadcn/ui/switch";
+import TimeInput from "@/components/time-input";
+import { realHarvestTime } from "@/lib/calc";
+import { Vegetable, vegetables } from "@/lib/data";
+import { formatDate, minutesToTimeString } from "@/lib/tools";
+import { SelectValue } from "@radix-ui/react-select";
+import { useMemo, useState } from "react";
 
 export default function Home() {
+  const [selectedVegetable, setSelectedVegetable] = useState<Vegetable | null>(null);
+
+  const [useCurrentTime, setUseCurrentTime] = useState<boolean>(true);
+  const [baseTime, setBaseTime] = useState<{ hour: number, minute: number }>({ hour: 0, minute: 0 });
+  const [harvestTimeResult, setHarvestTimeResult] = useState<{ fullWaterTime: Date, oneWaterTime: Date, lastWaterTime: Date } | null>(null);
+
+  const [toHarvestDuration, setToHarvestDuration] = useState<number>(0);
+  const [waterKeepDuration, setWaterKeepDuration] = useState<number>(0);
+
+  const [goingToharvestTimeResult, setGoingToHarvestTimeResult] = useState<{ fullWaterTime: Date, lastWaterTime: Date } | null>(null);
+
+  const calculatedTime = useMemo(() => {
+    if (selectedVegetable == null) return null;
+    return {
+      realHarvestTime: realHarvestTime(selectedVegetable.harvestTime, selectedVegetable.waterKeepTime),
+      invalideWaterTime: Math.round(selectedVegetable.waterKeepTime * 0.1),
+    }
+  }, [selectedVegetable]);
+
+  const onVegetableChange = (value: string) => {
+    const index = parseInt(value);
+    setSelectedVegetable(vegetables[index]);
+    setHarvestTimeResult(null);
+    setGoingToHarvestTimeResult(null);
+  }
+
+  const calculateHarvestTime = () => {
+    if (selectedVegetable == null || calculatedTime == null) return;
+
+    const baseDate = new Date();
+    if (!useCurrentTime) {
+      baseDate.setHours(baseTime.hour);
+      baseDate.setMinutes(baseTime.minute);
+    }
+    const fullWaterTime = new Date(baseDate);
+    const oneWaterTime = new Date(baseDate);
+    const lastWaterTime = new Date(baseDate);
+    fullWaterTime.setMinutes(fullWaterTime.getMinutes() + calculatedTime.realHarvestTime);
+    oneWaterTime.setMinutes(oneWaterTime.getMinutes() + selectedVegetable.harvestTime - Math.round(selectedVegetable.waterKeepTime * 0.25));
+    lastWaterTime.setMinutes(lastWaterTime.getMinutes() + calculatedTime.realHarvestTime - Math.round(selectedVegetable.waterKeepTime * 0.1));
+
+    setHarvestTimeResult({
+      fullWaterTime,
+      oneWaterTime,
+      lastWaterTime,
+    });
+  };
+
+  const calculateGoingToHarvestTime = () => {
+    if (selectedVegetable == null || calculatedTime == null) return;
+
+    const baseDate = new Date();
+    const fullWaterTime = new Date(baseDate);
+    const lastWaterTime = new Date(baseDate);
+
+    const realHarvestDuration = realHarvestTime(toHarvestDuration, waterKeepDuration);
+
+    fullWaterTime.setMinutes(fullWaterTime.getMinutes() + realHarvestDuration);
+    lastWaterTime.setMinutes(lastWaterTime.getMinutes() + realHarvestDuration - Math.round(selectedVegetable.waterKeepTime * 0.1));
+
+    setGoingToHarvestTimeResult({
+      fullWaterTime,
+      lastWaterTime,
+    });
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+    <main className="flex w-full min-h-screen flex-col items-center">
+      <div className="flex flex-col items-stretch gap-y-4 w-full max-w-3xl py-6 px-6 lg:px-0">
+        <h1 className="text-2xl">元梦之星种菜计算器</h1>
+        <h2 className="text-lg border-b">选择蔬菜</h2>
+        <Select onValueChange={onVegetableChange}>
+          <SelectTrigger>
+            <SelectValue placeholder="请选择蔬菜">
+              <div>{selectedVegetable?.name}</div>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {vegetables.map((vegetable, i) => (
+              <SelectItem key={i} value={i.toString()}>{vegetable.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {selectedVegetable && (
+          <>
+            <h2 className="text-lg border-b">基础数据</h2>
+            <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <DataCeil title='不浇水成熟时间' data={minutesToTimeString(selectedVegetable.harvestTime)} />
+              <DataCeil title='满浇水成熟时间' data={minutesToTimeString(calculatedTime!.realHarvestTime)} />
+              <DataCeil title='水分保持时间' data={minutesToTimeString(selectedVegetable.waterKeepTime)} />
+              <DataCeil title='禁止浇水时间' data={minutesToTimeString(calculatedTime!.invalideWaterTime)} />
+            </div>
+            <h2 className="text-lg border-b">计算新种收获时间</h2>
+            <div>选择基准时间</div>
+            <div className="flex items-center gap-x-2">
+              <Switch id="use-current-time" checked={useCurrentTime} onCheckedChange={setUseCurrentTime} />
+              <Label htmlFor="use-current-time">使用当前时间</Label>
+              <Separator orientation="vertical" className="h-4"/>
+              <Label>自选时间</Label>
+              <TimeInput mode="time" disabled={useCurrentTime} onTimeChange={setBaseTime} />
+            </div>
+            <Button onClick={calculateHarvestTime}>算TMD</Button>
+            {harvestTimeResult && (
+              <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <DataCeil title='满浇水收获时间' data={formatDate(harvestTimeResult.fullWaterTime)} />
+                <DataCeil title='只浇第一水收获时间' data={formatDate(harvestTimeResult.oneWaterTime)} />
+                <DataCeil title='倒二浇时间' data={formatDate(harvestTimeResult.lastWaterTime)} />
+              </div>
+            )}
+            <h2 className="text-lg border-b">计算在途收获时间</h2>
+            <div className="flex items-center gap-x-2">
+              <Label>成熟时间</Label>
+              <TimeInput mode="duration" onDurationChange={setToHarvestDuration} />
+              <Separator orientation="vertical" className="h-4"/>
+              <Label>水分保持时间</Label>
+              <TimeInput mode="duration" onDurationChange={setWaterKeepDuration} />
+            </div>
+            <Button onClick={calculateGoingToHarvestTime}>算TMD</Button>
+            {goingToharvestTimeResult && (
+              <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <DataCeil title='收获时间' data={formatDate(goingToharvestTimeResult.fullWaterTime)} />
+                <DataCeil title='倒二浇时间' data={formatDate(goingToharvestTimeResult.lastWaterTime)} />
+              </div>
+            )}
+          </>
+        )}
       </div>
     </main>
   );

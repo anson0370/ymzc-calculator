@@ -1,8 +1,13 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import clsx from "clsx";
+import { fontInter, fontRobotoMono } from "./font";
 
-const inter = Inter({ subsets: ["latin"] });
+export const viewport: Viewport = {
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover',
+};
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -15,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="cn">
+      <body className={clsx(fontInter.variable, fontRobotoMono.variable)}>{children}</body>
     </html>
   );
 }
