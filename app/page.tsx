@@ -48,7 +48,9 @@ function CommentDrawer({
           <DrawerHeader>
             <DrawerTitle>备注</DrawerTitle>
           </DrawerHeader>
-          <Textarea rows={5} value={commentValue} onChange={(e) => setCommentValue(e.target.value)} />
+          <div className="px-4">
+            <Textarea rows={5} value={commentValue} onChange={(e) => setCommentValue(e.target.value)} />
+          </div>
           <DrawerFooter>
             <Button onClick={doSaveComment}>保存</Button>
             <Button onClick={() => onOpenChange(false)} variant='outline'>取消</Button>
