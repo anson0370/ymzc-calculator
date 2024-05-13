@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Input } from "./shadcn/ui/input";
 import clsx from "clsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./shadcn/ui/select";
 
 const hours = Array.from({ length: 24 }, (_, i) => i);
+const durationHours = Array.from({ length: 48 }, (_, i) => i);
 const minutes = Array.from({ length: 60 }, (_, i) => i);
 
 export default function TimeInput({
@@ -61,7 +61,7 @@ export default function TimeInput({
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {hours.map((i) => (
+          {(mode === 'time' ? hours : durationHours).map((i) => (
             <SelectItem key={i} value={i.toString()}>{i}</SelectItem>
           ))}
         </SelectContent>

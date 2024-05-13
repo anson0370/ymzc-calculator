@@ -2,9 +2,11 @@
 
 import { DataCeil, R1Data, R2Data } from "@/components/data-comps";
 import { Button } from "@/components/shadcn/ui/button";
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/shadcn/ui/drawer";
 import { Label } from "@/components/shadcn/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/shadcn/ui/select";
 import { Switch } from "@/components/shadcn/ui/switch";
+import { Textarea } from "@/components/shadcn/ui/textarea";
 import TimeInput from "@/components/time-input";
 import { realHarvestTime } from "@/lib/calc";
 import { vegetables } from "@/lib/data";
@@ -12,8 +14,70 @@ import useHistory from "@/lib/history";
 import { formatDate, minutesToTimeString } from "@/lib/tools";
 import { ClacHistoryItem, ClacResult1, ClacResult2, Vegetable } from "@/lib/types";
 import { SelectValue } from "@radix-ui/react-select";
-import { AlarmClockCheckIcon, AlarmClockIcon, CarrotIcon, DatabaseIcon, FileClockIcon, ListIcon } from "lucide-react";
-import { Fragment, useMemo, useState } from "react";
+import { AlarmClockCheckIcon, AlarmClockIcon, CalculatorIcon, CarrotIcon, DatabaseIcon, FenceIcon, FileClockIcon, NotebookPenIcon } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+
+function CommentDrawer({
+  open,
+  onOpenChange,
+  comment,
+  onCommentSave,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  comment?: string;
+  onCommentSave: (comment: string) => void;
+}) {
+  const [commentValue, setCommentValue] = useState<string>(comment ?? '');
+
+  useEffect(() => {
+    if (open === true) {
+      setCommentValue(comment ?? '');
+    }
+  }, [comment, open]);
+
+  const doSaveComment = () => {
+    onCommentSave(commentValue);
+    onOpenChange(false);
+  };
+
+  return (
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent>
+        <div className="mx-auto w-full max-w-lg">
+          <DrawerHeader>
+            <DrawerTitle>备注</DrawerTitle>
+          </DrawerHeader>
+          <Textarea rows={5} value={commentValue} onChange={(e) => setCommentValue(e.target.value)} />
+          <DrawerFooter>
+            <Button onClick={doSaveComment}>保存</Button>
+            <Button onClick={() => onOpenChange(false)} variant='outline'>取消</Button>
+          </DrawerFooter>
+        </div>
+      </DrawerContent>
+    </Drawer>
+  )
+}
+
+function Comment({
+  index,
+  comment,
+  onCommentClick,
+}: {
+  index: number,
+  comment?: string,
+  onCommentClick: (index: number, comment?: string) => void;
+}) {
+  return (
+    <div className="ml-2 px-2 border-l-4 border-slate-600 rounded text-slate-600 hover:cursor-pointer" onClick={() => onCommentClick(index, comment)}>
+      <div className="flex items-center text-sm">
+        <NotebookPenIcon className="w-3 h-3 mr-1"/>
+        <span>备注</span>
+      </div>
+      <pre>{comment}</pre>
+    </div>
+  );
+}
 
 export default function Home() {
   const [selectedVegetable, setSelectedVegetable] = useState<Vegetable | null>(null);
@@ -28,6 +92,18 @@ export default function Home() {
   const [goingToharvestTimeResult, setGoingToHarvestTimeResult] = useState<ClacResult2 | null>(null);
 
   const { histories, addHistory, addComment } = useHistory();
+  const [commentDrawerOpen, setCommentDrawerOpen] = useState<boolean>(false);
+  const [commentInfo, setCommentInfo] = useState<{ index: number, comment?: string } | null>(null);
+
+  const openCommentDrawer = (index: number, comment?: string) => {
+    setCommentInfo({ index, comment });
+    setCommentDrawerOpen(true);
+  };
+
+  const saveComment = (comment: string) => {
+    if (commentInfo == null) return;
+    addComment(commentInfo.index, comment);
+  };
 
   const calculatedTime = useMemo(() => {
     if (selectedVegetable == null) return null;
@@ -105,10 +181,10 @@ export default function Home() {
   return (
     <main className="flex w-full min-h-screen flex-col items-center">
       <div className="flex flex-col items-stretch gap-y-4 w-full max-w-3xl py-6 px-6 lg:px-0">
-        <CarrotIcon className="w-10 h-10 text-slate-500" />
+        <FenceIcon className="w-10 h-10 text-slate-500" />
         <h1 className="text-2xl">元梦之星种菜计算器</h1>
-        <h2 className="text-lg border-b mt-4">
-          <ListIcon className="inline mr-1 -mt-1 w-6 h-6 text-slate-500" />
+        <h2 className="text-lg p-1 rounded bg-slate-100 mt-4">
+          <CarrotIcon className="inline mr-1 -mt-1 w-6 h-6 text-slate-500" />
           <span>选择蔬菜</span>
         </h2>
         <Select onValueChange={onVegetableChange}>
@@ -125,7 +201,7 @@ export default function Home() {
         </Select>
         {selectedVegetable && (
           <>
-            <h2 className="text-lg border-b mt-4">
+            <h2 className="text-lg p-1 rounded bg-slate-100 mt-4">
               <DatabaseIcon className="inline mr-1 -mt-1 w-6 h-6 text-slate-500" />
               <span>基础数据</span>
             </h2>
@@ -135,7 +211,7 @@ export default function Home() {
               <DataCeil title='水分保持时间' data={minutesToTimeString(selectedVegetable.waterKeepTime)} />
               <DataCeil title='禁止浇水时间' data={minutesToTimeString(calculatedTime!.invalideWaterTime)} />
             </div>
-            <h2 className="text-lg border-b mt-4">
+            <h2 className="text-lg p-1 rounded bg-slate-100 mt-4">
               <AlarmClockCheckIcon className="inline mr-1 -mt-1 w-6 h-6 text-slate-500" />
               <span>计算新种收获时间（R1）</span>
             </h2>
@@ -150,11 +226,14 @@ export default function Home() {
                 <TimeInput mode="time" disabled={useCurrentTime} onTimeChange={setBaseTime} />
               </div>
             </div>
-            <Button onClick={calculateHarvestTime}>算TMD</Button>
+            <Button onClick={calculateHarvestTime}>
+              <CalculatorIcon className='w-4 h-4 mr-1' />
+              <span>计算</span>
+            </Button>
             {harvestTimeResult && (
               <R1Data result={harvestTimeResult} />
             )}
-            <h2 className="text-lg border-b mt-4">
+            <h2 className="text-lg p-1 rounded bg-slate-100 mt-4">
               <AlarmClockIcon className="inline mr-1 -mt-1 w-6 h-6 text-slate-500" />
               <span>计算在途收获时间（R2）</span>
             </h2>
@@ -168,7 +247,10 @@ export default function Home() {
                 <TimeInput mode="duration" onDurationChange={setWaterKeepDuration} />
               </div>
             </div>
-            <Button onClick={calculateGoingToHarvestTime}>算TMD</Button>
+            <Button onClick={calculateGoingToHarvestTime}>
+              <CalculatorIcon className='w-4 h-4 mr-1' />
+              <span>计算</span>
+            </Button>
             {goingToharvestTimeResult && (
               <R2Data result={goingToharvestTimeResult} />
             )}
@@ -176,28 +258,36 @@ export default function Home() {
         )}
         {histories.length > 0 && (
           <>
-            <h2 className="text-lg border-b mt-4">
+            <CommentDrawer
+              open={commentDrawerOpen}
+              onOpenChange={setCommentDrawerOpen}
+              onCommentSave={saveComment}
+              comment={commentInfo?.comment}
+            />
+            <h2 className="text-lg p-1 rounded bg-slate-100 mt-4">
               <FileClockIcon className="inline mr-1 -mt-1 w-6 h-6 text-slate-500" />
               <span>计算历史</span>
             </h2>
             {histories.map((history, i) => {
-              if (history.type === 'R1') {
-                return (
-                  <Fragment key={i}>
-                    <h3>{`${history.vegetable}(R1@${formatDate(history.baseTime)})`}</h3>
-                    <R1Data result={history.result} />
-                  </Fragment>
-                );
-              } else if (history.type === 'R2') {
-                return (
-                  <Fragment key={i}>
-                    <h3>{`${history.vegetable}(R2@${formatDate(history.baseTime)})`}</h3>
-                    <R2Data result={history.result} />
-                  </Fragment>
-                );
-              } else {
-                return null;
-              }
+              return (
+                <div key={history.baseTime.toString()} className="flex flex-col items-stretch gap-y-2 border-b">
+                  <h3>{`${history.vegetable}(${history.type}@${formatDate(history.baseTime)})`}</h3>
+                  <Comment index={i} comment={history.comment} onCommentClick={openCommentDrawer} />
+                  {function() {
+                    if (history.type === 'R1') {
+                      return (
+                        <R1Data result={history.result} />
+                      );
+                    } else if (history.type === 'R2') {
+                      return (
+                        <R2Data result={history.result} />
+                      );
+                    } else {
+                      return null;
+                    }
+                  }()}
+                </div>
+              )
             })}
           </>
         )}

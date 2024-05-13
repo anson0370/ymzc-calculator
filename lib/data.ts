@@ -36,7 +36,7 @@ export const vegetables: Vegetable[] = [
     name: '12小时作物',
     ...timebase720,
   }, {
-    name: '16小时作物（金币作物）',
+    name: '16小时作物💰',
     ...timebase960,
   }, {
     name: '1天8小时作物',

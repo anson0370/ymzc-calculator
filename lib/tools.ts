@@ -6,6 +6,6 @@ export function minutesToTimeString(minutes: number) {
   return `${hours}小时${remainingMinutes}分钟`;
 }
 
-export function formatDate(date: Date) {
+export function formatDate(date: Date | string) {
   return format(date, 'yyyy-MM-dd HH:mm');
 }
