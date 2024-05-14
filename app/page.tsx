@@ -158,7 +158,7 @@ export default function Home() {
     const fullWaterTime = new Date(baseDate);
     const lastWaterTime = new Date(baseDate);
 
-    const realHarvestDuration = realHarvestTime(toHarvestDuration, selectedVegetable.waterKeepTime - waterKeepDuration);
+    const realHarvestDuration = realHarvestTime(toHarvestDuration, selectedVegetable.waterKeepTime - waterKeepDuration, calculatedTime.invalideWaterTime);
 
     fullWaterTime.setMinutes(fullWaterTime.getMinutes() + realHarvestDuration);
     lastWaterTime.setMinutes(lastWaterTime.getMinutes() + realHarvestDuration - Math.round(selectedVegetable.waterKeepTime * 0.1));
@@ -307,6 +307,15 @@ export default function Home() {
             })}
           </>
         )}
+        <p className="text-center mt-8 mb-4 space-x-1">
+          <FenceIcon className="inline w-4 h-4 text-pink-400"/>
+          <FenceIcon className="inline w-4 h-4 text-red-400"/>
+          <FenceIcon className="inline w-4 h-4 text-yellow-400"/>
+          <FenceIcon className="inline w-4 h-4 text-green-400"/>
+          <FenceIcon className="inline w-4 h-4 text-cyan-400"/>
+          <FenceIcon className="inline w-4 h-4 text-blue-400"/>
+          <FenceIcon className="inline w-4 h-4 text-purple-400"/>
+        </p>
       </div>
     </main>
   );
