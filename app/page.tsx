@@ -180,26 +180,30 @@ export default function Home() {
 
   return (
     <main className="flex w-full min-h-screen flex-col items-center">
-      <div className="flex flex-col items-stretch gap-y-4 w-full max-w-3xl py-6 px-6 lg:px-0">
+      <div className="flex flex-col items-stretch gap-y-4 w-full max-w-3xl p-4">
         <FenceIcon className="w-10 h-10 text-slate-500" />
         <h1 className="text-2xl">元梦之星种菜计算器</h1>
-        <h2 className="text-lg p-1 rounded bg-slate-100 mt-4">
-          <CarrotIcon className="inline mr-1 -mt-1 w-6 h-6 text-slate-500" />
-          <span>选择蔬菜</span>
-        </h2>
-        <Select value={selectedVegetableIndex.toString()} onValueChange={onVegetableChange}>
-          <SelectTrigger>
-            <SelectValue placeholder="请选择蔬菜">
-              <div>{selectedVegetable.name}</div>
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {vegetables.map((vegetable, i) => (
-              <SelectItem key={i} value={i.toString()}>{vegetable.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <h2 className="text-lg p-1 rounded bg-slate-100 mt-4">
+        <div className="bg-white pt-2 pb-[1px] sticky top-0 z-10">
+          <div className="flex flex-col items-stretch gap-y-2 -mx-2 p-2 rounded bg-slate-100 shadow">
+            <h2 className="text-lg p-1">
+              <CarrotIcon className="inline mr-1 -mt-1 w-6 h-6 text-slate-500" />
+              <span>选择蔬菜</span>
+            </h2>
+            <Select value={selectedVegetableIndex.toString()} onValueChange={onVegetableChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="请选择蔬菜">
+                  <div>{selectedVegetable.name}</div>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {vegetables.map((vegetable, i) => (
+                  <SelectItem key={i} value={i.toString()}>{vegetable.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <h2 className="text-lg p-1 rounded bg-slate-100 mt-2">
           <DatabaseIcon className="inline mr-1 -mt-1 w-6 h-6 text-slate-500" />
           <span>基础数据</span>
         </h2>

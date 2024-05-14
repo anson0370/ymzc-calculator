@@ -1,4 +1,13 @@
 @tailwind base;
-  @tailwind components;
-  @tailwind utilities;
-  
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .rainbow-text {
+    /* background-image: linear-gradient(90deg, #f6ad55, #fc8181, #f687b3, #6cb2eb, #7fdbca, #9ece6a, #f6ad55); */
+    background-image: linear-gradient(90deg, #eab308, #ef4444, #a855f7, #3b82f6, #06b6d4, #22c55e, #eab308);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+}
