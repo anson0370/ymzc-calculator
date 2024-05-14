@@ -185,7 +185,7 @@ export default function Home() {
         <h1 className="text-2xl">元梦之星种菜计算器</h1>
         <div className="bg-white pt-2 pb-[1px] sticky top-0 z-10">
           <div className="flex flex-col items-stretch gap-y-2 -mx-2 p-2 rounded bg-slate-100 shadow">
-            <h2 className="text-lg p-1">
+            <h2 className="text-lg px-1">
               <CarrotIcon className="inline mr-1 -mt-1 w-6 h-6 text-slate-500" />
               <span>选择蔬菜</span>
             </h2>
