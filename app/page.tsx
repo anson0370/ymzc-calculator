@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/s
 import { Switch } from "@/components/shadcn/ui/switch";
 import { Textarea } from "@/components/shadcn/ui/textarea";
 import TimeInput from "@/components/time-input";
-import { realHarvestTime } from "@/lib/calc";
+import { calcWaterList, calcRealHarvestTime } from "@/lib/calc";
 import { vegetables } from "@/lib/data";
 import useHistory from "@/lib/history";
 import { formatDate, minutesToTimeString } from "@/lib/tools";
@@ -111,7 +111,7 @@ export default function Home() {
 
   const calculatedTime = useMemo(() => {
     return {
-      realHarvestTime: realHarvestTime(selectedVegetable.harvestTime, selectedVegetable.waterKeepTime),
+      realHarvestTime: calcRealHarvestTime(selectedVegetable.harvestTime, selectedVegetable.waterKeepTime),
       invalideWaterTime: Math.round(selectedVegetable.waterKeepTime * 0.1),
     }
   }, [selectedVegetable]);
@@ -131,16 +131,30 @@ export default function Home() {
       baseDate.setMinutes(baseTime.minute);
     }
     const fullWaterTime = new Date(baseDate);
-    const oneWaterTime = new Date(baseDate);
-    const lastWaterTime = new Date(baseDate);
     fullWaterTime.setMinutes(fullWaterTime.getMinutes() + calculatedTime.realHarvestTime);
+
+    const oneWaterTime = new Date(baseDate);
     oneWaterTime.setMinutes(oneWaterTime.getMinutes() + selectedVegetable.harvestTime - Math.round(selectedVegetable.waterKeepTime * 0.25));
-    lastWaterTime.setMinutes(lastWaterTime.getMinutes() + calculatedTime.realHarvestTime - Math.round(selectedVegetable.waterKeepTime * 0.1));
+
+    const twoWaterTime = new Date(oneWaterTime);
+    twoWaterTime.setMinutes(twoWaterTime.getMinutes() - Math.round(selectedVegetable.waterKeepTime * 0.25));
+
+    const lastWaterTime = new Date(fullWaterTime);
+    lastWaterTime.setMinutes(lastWaterTime.getMinutes() - Math.round(selectedVegetable.waterKeepTime * 0.1));
+
+    const waterList = calcWaterList(calculatedTime.realHarvestTime, 0, selectedVegetable.waterKeepTime);
+    const waterTimes = waterList.map((time) => {
+      const date = new Date(baseDate);
+      date.setMinutes(date.getMinutes() + time);
+      return date;
+    });
 
     const result: ClacResult1 = {
       fullWaterTime,
       oneWaterTime,
+      twoWaterTime,
       lastWaterTime,
+      waterTimes,
     };
     setHarvestTimeResult(result);
 
@@ -156,16 +170,28 @@ export default function Home() {
   const calculateGoingToHarvestTime = () => {
     const baseDate = new Date();
     const fullWaterTime = new Date(baseDate);
-    const lastWaterTime = new Date(baseDate);
-
-    const realHarvestDuration = realHarvestTime(toHarvestDuration, selectedVegetable.waterKeepTime - waterKeepDuration, calculatedTime.invalideWaterTime);
-
+    const realHarvestDuration = calcRealHarvestTime(toHarvestDuration, selectedVegetable.waterKeepTime - waterKeepDuration, calculatedTime.invalideWaterTime);
     fullWaterTime.setMinutes(fullWaterTime.getMinutes() + realHarvestDuration);
-    lastWaterTime.setMinutes(lastWaterTime.getMinutes() + realHarvestDuration - Math.round(selectedVegetable.waterKeepTime * 0.1));
+
+    const endWaterTime = new Date(baseDate);
+    // 用一水时间和满浇时间取大的就是只浇尾水的时间
+    endWaterTime.setMinutes(endWaterTime.getMinutes() + Math.max(realHarvestDuration, toHarvestDuration - Math.floor(selectedVegetable.waterKeepTime * 0.25)));
+
+    const lastWaterTime = new Date(fullWaterTime);
+    lastWaterTime.setMinutes(lastWaterTime.getMinutes() - Math.round(selectedVegetable.waterKeepTime * 0.1));
+
+    const waterList = calcWaterList(realHarvestDuration, selectedVegetable.waterKeepTime - waterKeepDuration, selectedVegetable.waterKeepTime);
+    const waterTimes = waterList.map((time) => {
+      const date = new Date(baseDate);
+      date.setMinutes(date.getMinutes() + time);
+      return date;
+    });
 
     const result: ClacResult2 = {
       fullWaterTime,
+      endWaterTime,
       lastWaterTime,
+      waterTimes,
     };
     setGoingToHarvestTimeResult(result);
 
@@ -286,7 +312,7 @@ export default function Home() {
             </h2>
             {histories.map((history, i) => {
               return (
-                <div key={history.baseTime.toString()} className="flex flex-col items-stretch gap-y-2 border-b">
+                <div key={history.baseTime.toString()} className="flex flex-col items-stretch gap-y-2 pb-2 border-b">
                   <h3>{`${history.vegetable}(${history.type}@${formatDate(history.baseTime)})`}</h3>
                   <Comment index={i} comment={history.comment} onCommentClick={openCommentDrawer} />
                   {function() {
