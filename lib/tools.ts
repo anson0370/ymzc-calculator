@@ -9,3 +9,7 @@ export function minutesToTimeString(minutes: number) {
 export function formatDate(date: Date | string) {
   return format(date, 'yyyy-MM-dd HH:mm');
 }
+
+export function formatDateToHHmm(date: Date | string) {
+  return format(date, 'HH:mm');
+}

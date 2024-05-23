@@ -1,6 +1,7 @@
 'use client';
 
 import { DataCeil, R1Data, R2Data } from "@/components/data-comps";
+import { ConfirmHolder } from "@/components/dialog";
 import { Button } from "@/components/shadcn/ui/button";
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/shadcn/ui/drawer";
 import { Label } from "@/components/shadcn/ui/label";
@@ -358,6 +359,7 @@ export default function Home() {
           <FenceIcon className="inline w-4 h-4 text-purple-400"/>
         </p>
       </div>
+      <ConfirmHolder />
     </main>
   );
 }
