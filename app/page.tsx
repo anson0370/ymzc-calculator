@@ -207,7 +207,30 @@ export default function Home() {
   return (
     <main className="flex w-full min-h-screen flex-col items-center">
       <div className="flex flex-col items-stretch gap-y-4 w-full max-w-3xl p-4">
-        <FenceIcon className="w-10 h-10 text-slate-500" />
+        <div className="flex items-center justify-between">
+          <FenceIcon className="w-10 h-10 text-slate-500" />
+          <Popover>
+            <PopoverTrigger><HelpCircleIcon className="w-6 h-6 text-slate-400"/></PopoverTrigger>
+            <PopoverContent className="text-sm">
+              计算新种收获时间（R1）：
+              <br/>
+              计算新种植一种作物后的收获时间，可以选择按当前时间计算，也可以自选种植时间计算，方便规划收菜时间。
+              <br/>
+              <br/>
+              计算在途收获时间（R2）：
+              <br/>
+              计算已种下一段时间后的作物的收获时间，在游戏内查看待成熟时间和水分保持时间填入后就可算出收菜时间（方便偷别人的菜🐶）。
+              <br/>
+              <br/>
+              倒二浇时间：
+              <br/>
+              指倒数第二次可浇水的最晚时间，避免浇水后因为禁浇时间的缘故，导致在最后收菜时间前无法浇水。
+              <br/>
+              <br/>
+              iOS 系统点击时间可直接设置一个提前一分钟的倒计时，需要先配置好一个名为倒计时的快捷指令。
+            </PopoverContent>
+          </Popover>
+        </div>
         <h1 className="text-2xl">元梦之星种菜计算器</h1>
         <div className="bg-white pt-2 pb-[1px] sticky top-0 z-10">
           <div className="flex flex-col items-stretch gap-y-2 -mx-2 p-2 rounded bg-slate-100 shadow">
@@ -234,22 +257,22 @@ export default function Home() {
           <span>基础数据</span>
         </h2>
         <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <DataCeil title='不浇水成熟时间' data={minutesToTimeString(selectedVegetable.harvestTime)} />
-          <DataCeil title='满浇水成熟时间' data={minutesToTimeString(calculatedTime!.realHarvestTime)} />
-          <DataCeil title='水分保持时间' data={minutesToTimeString(selectedVegetable.waterKeepTime)} />
-          <DataCeil title='禁止浇水时间' data={minutesToTimeString(calculatedTime!.invalideWaterTime)} />
+          <DataCeil title='不浇水成熟时间'>
+            {minutesToTimeString(selectedVegetable.harvestTime)}
+          </DataCeil>
+          <DataCeil title='满浇水成熟时间'>
+            {minutesToTimeString(calculatedTime!.realHarvestTime)}
+          </DataCeil>
+          <DataCeil title='水分保持时间'>
+            {minutesToTimeString(selectedVegetable.waterKeepTime)}
+          </DataCeil>
+          <DataCeil title='禁止浇水时间'>
+            {minutesToTimeString(calculatedTime!.invalideWaterTime)}
+          </DataCeil>
         </div>
         <h2 className="flex items-center text-lg p-1 rounded bg-slate-100 mt-4">
           <AlarmClockCheckIcon className="mr-1 w-6 h-6 text-slate-500" />
           <span>计算新种收获时间（R1）</span>
-          <Popover>
-            <PopoverTrigger className="ml-4"><HelpCircleIcon className="w-5 h-5"/></PopoverTrigger>
-            <PopoverContent>
-              计算新种植一种作物后的收获时间，可以选择按当前时间计算，也可以自选种植时间计算，方便规划收菜时间。
-              <br/>
-              倒二浇时间：指倒数第二次可浇水的最晚时间，避免浇水后因为禁浇时间的缘故，导致在最后收菜时间前无法浇水。
-            </PopoverContent>
-          </Popover>
         </h2>
         <div>选择基准时间</div>
         <div className="flex flex-col items-start gap-y-2 sm:flex-row sm:items-center sm:gap-x-2">
@@ -272,14 +295,6 @@ export default function Home() {
         <h2 className="flex items-center text-lg p-1 rounded bg-slate-100 mt-4">
           <AlarmClockIcon className="mr-1 w-6 h-6 text-slate-500" />
           <span>计算在途收获时间（R2）</span>
-          <Popover>
-            <PopoverTrigger className="ml-4"><HelpCircleIcon className="w-5 h-5"/></PopoverTrigger>
-            <PopoverContent>
-              计算已种下一段时间后的作物的收获时间，在游戏内查看待成熟时间和水分保持时间填入后就可算出收菜时间（方便偷别人的菜🐶）。
-              <br/>
-              倒二浇时间：指倒数第二次可浇水的最晚时间，避免浇水后因为禁浇时间的缘故，导致在最后收菜时间前无法浇水。
-            </PopoverContent>
-          </Popover>
         </h2>
         <div className="flex flex-col items-start gap-y-2 sm:flex-row sm:items-center sm:gap-x-2">
           <div className="flex items-center gap-x-2">
