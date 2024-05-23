@@ -228,7 +228,7 @@ export default function Home() {
               指倒数第二次可浇水的最晚时间，避免浇水后因为禁浇时间的缘故，导致在最后收菜时间前无法浇水。
               <br/>
               <br/>
-              iOS 系统点击时间可直接设置一个提前一分钟的倒计时，需要先配置好一个名为倒计时的快捷指令。
+              iOS 系统点击时间可直接设置一个提前一分钟的闹钟，需要先导入<a href='https://www.icloud.com/shortcuts/2f7fc09c232a42f3becda7826cd9fb7a' target='_blank' className="underline">这个快捷指令</a>。
             </PopoverContent>
           </Popover>
         </div>
