@@ -58,7 +58,7 @@ export default function TimeInput({
 
   return (
     <div className={clsx(
-      "flex items-center gap-x-1 px-2",
+      "flex items-center px-2",
       "rounded-md border border-slate-200 bg-white text-sm",
       {
         "cursor-not-allowed opacity-50": disabled,
