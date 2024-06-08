@@ -12,62 +12,63 @@ export default function TimeInput({
   onTimeChange?: (time: { hour: number, minute: number }) => void;
   onDurationChange?: (duration: number) => void;
 }) {
-  const firstInputRef = useRef<HTMLInputElement>(null);
-  const secondInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const [hour, setHour] = useState<number>(0);
-  const [minute, setMinute] = useState<number>(0);
+  const [inputValue, setInputValue] = useState<string>('');
 
-  const hourValueChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const valueChange = (e: ChangeEvent<HTMLInputElement>) => {
     const strValue = e.target.value;
-    const hourValue = strValue == "" ? 0 : parseInt(strValue);
-    if (Number.isNaN(hourValue)) {
+    const numberValue = strValue === '' ? 0 : Math.abs(parseInt(strValue));
+    if (Number.isNaN(numberValue)) {
       return;
     }
-    const validHourValue = Math.max(0, Math.min(99, hourValue));
-    setHour(validHourValue);
+    const hour = Math.floor(numberValue / 100);
+    const minute = numberValue % 100;
     if (onTimeChange != null) {
-      onTimeChange({ hour: validHourValue, minute });
+      onTimeChange({ hour, minute });
     }
     if (onDurationChange != null) {
-      onDurationChange(validHourValue * 60 + minute);
+      onDurationChange(hour * 60 + minute);
     }
-    if (validHourValue >= 10) {
-      secondInputRef.current?.focus();
+    if (strValue.length <= 4) {
+      setInputValue(strValue);
+    } else {
+      setInputValue(strValue.slice(-4));
     }
   }
 
-  const minuteValueChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const strValue = e.target.value;
-    const minuteValue = strValue == "" ? 0 : parseInt(strValue);
-    if (Number.isNaN(minuteValue)) {
-      return;
-    }
-    const validMinuteValue = Math.max(0, Math.min(59, minuteValue));
-    setMinute(validMinuteValue);
-    if (onTimeChange != null) {
-      onTimeChange({ hour, minute: validMinuteValue });
-    }
-    if (onDurationChange != null) {
-      onDurationChange(hour * 60 + validMinuteValue);
-    }
-    if (strValue == "") {
-      firstInputRef.current?.focus();
-    }
-  }
+  const hourStr = inputValue.slice(-4, -2);
+  const minStr = inputValue.slice(-2);
 
   return (
-    <div className={clsx(
-      "flex items-center px-2",
-      "rounded-md border border-slate-200 bg-white text-sm",
-      {
-        "cursor-not-allowed opacity-50": disabled,
-      },
-    )}>
-      <input disabled={disabled} ref={firstInputRef} type="number" max={99} min={0} className="font-mono number-input-noarrow w-8 p-2 text-right bg-transparent" placeholder="0" value={hour.toString()} onChange={hourValueChange} />
-      <span className="text-slate-600">{mode === 'time' ? '点' : '小时'}</span>
-      <input disabled={disabled} ref={secondInputRef} type="number" max={60} min={0} className="font-mono number-input-noarrow w-8 p-2 text-right bg-transparent" placeholder="0" value={minute.toString()} onChange={minuteValueChange} />
-      <span className="text-slate-600">分</span>
+    <div
+      className={clsx(
+        "relative group",
+        "rounded-md border border-slate-200 bg-white text-sm",
+        "focus-within:border-blue-500",
+        {
+          "cursor-not-allowed opacity-50": disabled,
+        },
+      )}
+      onClick={() => {inputRef.current?.focus()}}
+    >
+      <div className="flex items-center p-2 relative z-10">
+        <span className="font-mono w-7 px-1 text-right align-bottom">{hourStr === '' ? '0' : hourStr}</span>
+        <span className="text-slate-600">{mode === 'time' ? '点' : '小时'}</span>
+        <span className="font-mono w-7 px-1 pr-[1px] text-right">{minStr === '' ? '0' : minStr}</span>
+        <span className="w-[2px] h-4 mr-[1px] group-focus-within:bg-blue-500 group-focus-within:animate-blink" />
+        <span className="text-slate-600">分</span>
+      </div>
+      <input
+        ref={inputRef}
+        type="number"
+        className={clsx(
+          "absolute z-0 inset-0 opacity-0 cursor-pointer",
+        )}
+        value={inputValue}
+        onChange={valueChange}
+        disabled={disabled}
+      />
     </div>
   )
 }
