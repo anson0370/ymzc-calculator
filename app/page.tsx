@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/s
 import { Switch } from "@/components/shadcn/ui/switch";
 import { Textarea } from "@/components/shadcn/ui/textarea";
 import TimeInput from "@/components/time-input";
+import TimeSelect from "@/components/time-select";
 import { calcWaterList, calcRealHarvestTime } from "@/lib/calc";
 import { vegetables } from "@/lib/data";
 import useHistory from "@/lib/history";
