@@ -10,6 +10,11 @@ const timebase360 = {
   waterKeepTime: 120,
 };
 
+const timebase480 = {
+  harvestTime: 480,
+  waterKeepTime: 160,
+};
+
 const timebase720 = {
   harvestTime: 720,
   waterKeepTime: 240,
@@ -32,6 +37,9 @@ export const vegetables: Vegetable[] = [
   }, {
     name: '6小时作物',
     ...timebase360,
+  }, {
+    name: '8小时作物',
+    ...timebase480,
   }, {
     name: '12小时作物',
     ...timebase720,

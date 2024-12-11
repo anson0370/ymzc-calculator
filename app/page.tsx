@@ -4,20 +4,21 @@ import { DataCeil, R1Data, R2Data } from "@/components/data-comps";
 import { ConfirmHolder } from "@/components/dialog";
 import { Button } from "@/components/shadcn/ui/button";
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/shadcn/ui/drawer";
+import { Input } from "@/components/shadcn/ui/input";
 import { Label } from "@/components/shadcn/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/shadcn/ui/select";
 import { Switch } from "@/components/shadcn/ui/switch";
 import { Textarea } from "@/components/shadcn/ui/textarea";
 import TimeInput from "@/components/time-input";
-import TimeSelect from "@/components/time-select";
 import { calcWaterList, calcRealHarvestTime } from "@/lib/calc";
 import { vegetables } from "@/lib/data";
 import useHistory from "@/lib/history";
 import { formatDate, minutesToTimeString } from "@/lib/tools";
 import { ClacHistoryItem, ClacResult1, ClacResult2, Vegetable } from "@/lib/types";
+import { useLocalStorage } from "@mantine/hooks";
 import { SelectValue } from "@radix-ui/react-select";
-import { AlarmClockCheckIcon, AlarmClockIcon, CalculatorIcon, CarrotIcon, DatabaseIcon, FenceIcon, FileClockIcon, HelpCircleIcon, NotebookPenIcon } from "lucide-react";
+import { AccessibilityIcon, AlarmClockCheckIcon, AlarmClockIcon, CalculatorIcon, CarrotIcon, DatabaseIcon, FenceIcon, FileClockIcon, GlassWaterIcon, HelpCircleIcon, NotebookPenIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 function CommentDrawer({
@@ -87,6 +88,12 @@ function Comment({
 export default function Home() {
   const [selectedVegetableIndex, setSelectedVegetableIndex] = useState<number>(3);
   const [selectedVegetable, setSelectedVegetable] = useState<Vegetable>(vegetables[3]);
+  const [buildingBuffer, setBuildingBuffer] = useLocalStorage({
+    key: 'building-buffer',
+    defaultValue: {
+      waterKeepBuffer: 0,
+    },
+  });
 
   const [useCurrentTime, setUseCurrentTime] = useState<boolean>(true);
   const [baseTime, setBaseTime] = useState<{ hour: number, minute: number }>({ hour: 0, minute: 0 });
@@ -112,11 +119,13 @@ export default function Home() {
   };
 
   const calculatedTime = useMemo(() => {
+    const waterKeepTime = Math.round(selectedVegetable.waterKeepTime * (1 + buildingBuffer.waterKeepBuffer / 100));
     return {
-      realHarvestTime: calcRealHarvestTime(selectedVegetable.harvestTime, selectedVegetable.waterKeepTime),
-      invalideWaterTime: Math.round(selectedVegetable.waterKeepTime * 0.1),
+      realHarvestTime: calcRealHarvestTime(selectedVegetable.harvestTime, waterKeepTime),
+      invalideWaterTime: Math.round(waterKeepTime * 0.1),
+      waterKeepTime,
     }
-  }, [selectedVegetable]);
+  }, [selectedVegetable, buildingBuffer]);
 
   const onVegetableChange = (value: string) => {
     const index = parseInt(value);
@@ -136,15 +145,15 @@ export default function Home() {
     fullWaterTime.setMinutes(fullWaterTime.getMinutes() + calculatedTime.realHarvestTime);
 
     const oneWaterTime = new Date(baseDate);
-    oneWaterTime.setMinutes(oneWaterTime.getMinutes() + selectedVegetable.harvestTime - Math.round(selectedVegetable.waterKeepTime * 0.25));
+    oneWaterTime.setMinutes(oneWaterTime.getMinutes() + selectedVegetable.harvestTime - Math.round(calculatedTime.waterKeepTime * 0.25));
 
     const twoWaterTime = new Date(oneWaterTime);
-    twoWaterTime.setMinutes(twoWaterTime.getMinutes() - Math.round(selectedVegetable.waterKeepTime * 0.25));
+    twoWaterTime.setMinutes(twoWaterTime.getMinutes() - Math.round(calculatedTime.waterKeepTime * 0.25));
 
     const lastWaterTime = new Date(fullWaterTime);
-    lastWaterTime.setMinutes(lastWaterTime.getMinutes() - Math.round(selectedVegetable.waterKeepTime * 0.1));
+    lastWaterTime.setMinutes(lastWaterTime.getMinutes() - Math.round(calculatedTime.waterKeepTime * 0.1));
 
-    const waterList = calcWaterList(calculatedTime.realHarvestTime, 0, selectedVegetable.waterKeepTime);
+    const waterList = calcWaterList(calculatedTime.realHarvestTime, 0, calculatedTime.waterKeepTime);
     const waterTimes = waterList.map((time) => {
       const date = new Date(baseDate);
       date.setMinutes(date.getMinutes() + time);
@@ -172,17 +181,17 @@ export default function Home() {
   const calculateGoingToHarvestTime = () => {
     const baseDate = new Date();
     const fullWaterTime = new Date(baseDate);
-    const realHarvestDuration = calcRealHarvestTime(toHarvestDuration, selectedVegetable.waterKeepTime - waterKeepDuration, calculatedTime.invalideWaterTime);
+    const realHarvestDuration = calcRealHarvestTime(toHarvestDuration, calculatedTime.waterKeepTime - waterKeepDuration, calculatedTime.invalideWaterTime);
     fullWaterTime.setMinutes(fullWaterTime.getMinutes() + realHarvestDuration);
 
     const endWaterTime = new Date(baseDate);
     // 用一水时间和满浇时间取大的就是只浇尾水的时间
-    endWaterTime.setMinutes(endWaterTime.getMinutes() + Math.max(realHarvestDuration, toHarvestDuration - Math.floor(selectedVegetable.waterKeepTime * 0.25)));
+    endWaterTime.setMinutes(endWaterTime.getMinutes() + Math.max(realHarvestDuration, toHarvestDuration - Math.floor(calculatedTime.waterKeepTime * 0.25)));
 
     const lastWaterTime = new Date(fullWaterTime);
-    lastWaterTime.setMinutes(lastWaterTime.getMinutes() - Math.round(selectedVegetable.waterKeepTime * 0.1));
+    lastWaterTime.setMinutes(lastWaterTime.getMinutes() - Math.round(calculatedTime.waterKeepTime * 0.1));
 
-    const waterList = calcWaterList(realHarvestDuration, selectedVegetable.waterKeepTime - waterKeepDuration, selectedVegetable.waterKeepTime);
+    const waterList = calcWaterList(realHarvestDuration, calculatedTime.waterKeepTime - waterKeepDuration, calculatedTime.waterKeepTime);
     const waterTimes = waterList.map((time) => {
       const date = new Date(baseDate);
       date.setMinutes(date.getMinutes() + time);
@@ -234,7 +243,7 @@ export default function Home() {
           </Popover>
         </div>
         <h1 className="text-2xl">元梦之星种菜计算器</h1>
-        <div className="bg-white pt-2 pb-[1px] sticky top-0 z-10">
+        <div className="bg-white pt-2 pb-[1px] sticky top-0 z-[100]">
           <div className="flex flex-col items-stretch gap-y-2 -mx-2 p-2 rounded bg-slate-100 shadow">
             <h2 className="text-lg px-1">
               <CarrotIcon className="inline mr-1 -mt-1 w-6 h-6 text-slate-500" />
@@ -254,6 +263,22 @@ export default function Home() {
             </Select>
           </div>
         </div>
+        <h2 className="px-1">
+          <AccessibilityIcon className="inline mr-1 -mt-1 w-5 h-5 text-slate-500" />
+          <span>设施加成</span>
+        </h2>
+        <div className="grid grid-cols-2 gap-2 -mt-2">
+          <div className="flex flex-col gap-y-1">
+            <div className="flex items-center gap-x-1 text-slate-500">
+              <GlassWaterIcon className="w-4 h-4" />
+              <span>水分保持加成</span>
+            </div>
+            <div className="flex items-center gap-x-1">
+              <Input type="number" value={buildingBuffer.waterKeepBuffer} onChange={(e) => setBuildingBuffer({ ...buildingBuffer, waterKeepBuffer: parseInt(e.target.value) })} />
+              <span>%</span>
+            </div>
+          </div>
+        </div>
         <h2 className="text-lg p-1 rounded bg-slate-100 mt-2">
           <DatabaseIcon className="inline mr-1 -mt-1 w-6 h-6 text-slate-500" />
           <span>基础数据</span>
@@ -266,7 +291,7 @@ export default function Home() {
             {minutesToTimeString(calculatedTime!.realHarvestTime)}
           </DataCeil>
           <DataCeil title='水分保持时间'>
-            {minutesToTimeString(selectedVegetable.waterKeepTime)}
+            {minutesToTimeString(calculatedTime!.waterKeepTime)}
           </DataCeil>
           <DataCeil title='禁止浇水时间'>
             {minutesToTimeString(calculatedTime!.invalideWaterTime)}
