@@ -4,7 +4,7 @@ import { formatDate, formatDateToHHmm } from "@/lib/tools";
 import { useConfirm } from "./dialog";
 import { Input } from "./shadcn/ui/input";
 
-export default function TimerTrigger({ toTime }: { toTime: Date | string }) {
+export default function TimerTrigger({ toTime, noDay }: { toTime: Date | string, noDay?: boolean }) {
   const { confirm } = useConfirm();
 
   const time = new Date(toTime);
@@ -17,12 +17,12 @@ export default function TimerTrigger({ toTime }: { toTime: Date | string }) {
 
     const alarmTime = new Date(toTime);
     alarmTime.setMinutes(alarmTime.getMinutes() - 1);
-    const timeStr = formatDateToHHmm(alarmTime);
+    const alertTimeStr = formatDateToHHmm(alarmTime);
 
     confirm({
       title: '设置闹钟',
       body: (<div>
-        <p>将设置时间为 <strong>{timeStr}</strong> 的闹钟</p>
+        <p>将设置时间为 <strong>{alertTimeStr}</strong> 的闹钟</p>
         <div className="flex items-center mt-2">
           <span className="shrink-0">闹钟名：</span>
           <Input id="alarm-name" defaultValue='浇水收菜' />
@@ -32,14 +32,14 @@ export default function TimerTrigger({ toTime }: { toTime: Date | string }) {
       cancelText: '取消',
       onConfirm: () => {
         const alarmName = (document.getElementById('alarm-name') as HTMLInputElement).value;
-        window.open(`shortcuts://run-shortcut?name=种菜闹钟&input=${encodeURIComponent(JSON.stringify({ time: timeStr, name: alarmName }))}`);
+        window.open(`shortcuts://run-shortcut?name=种菜闹钟&input=${encodeURIComponent(JSON.stringify({ time: alertTimeStr, name: alarmName }))}`);
       },
     });
   }
 
   return (
     <a href="#" onClick={(e) => { e.preventDefault(); onTimeClick(); }} className="hover:underline">
-      {formatDate(toTime)}
+      {noDay ? formatDateToHHmm(toTime) : formatDate(toTime)}
     </a>
   )
 }

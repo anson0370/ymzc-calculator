@@ -33,6 +33,9 @@ export type ClacHistoryItem = ({
 } | {
   type: 'R2',
   result: ClacResult2,
+} | {
+  type: 'R3',
+  result: ClacResult1,
 }) & {
   vegetable: string;
   baseTime: Date;

@@ -1,6 +1,6 @@
 'use client';
 
-import { DataCeil, R1Data, R2Data } from "@/components/data-comps";
+import { DataCeil, R1Data, R2Data, R3Data } from "@/components/data-comps";
 import { ConfirmHolder } from "@/components/dialog";
 import { Button } from "@/components/shadcn/ui/button";
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/shadcn/ui/drawer";
@@ -14,11 +14,11 @@ import TimeInput from "@/components/time-input";
 import { calcWaterList, calcRealHarvestTime } from "@/lib/calc";
 import { vegetables } from "@/lib/data";
 import useHistory from "@/lib/history";
-import { formatDate, minutesToTimeString } from "@/lib/tools";
+import { formatDate, formatDateToHHmm, minutesToTimeString } from "@/lib/tools";
 import { ClacHistoryItem, ClacResult1, ClacResult2, Vegetable } from "@/lib/types";
 import { useLocalStorage } from "@mantine/hooks";
 import { SelectValue } from "@radix-ui/react-select";
-import { AccessibilityIcon, AlarmClockCheckIcon, AlarmClockIcon, CalculatorIcon, CarrotIcon, DatabaseIcon, FenceIcon, FileClockIcon, GlassWaterIcon, HelpCircleIcon, NotebookPenIcon } from "lucide-react";
+import { AccessibilityIcon, BeanIcon, CalculatorIcon, CarrotIcon, DatabaseIcon, FenceIcon, FileClockIcon, Flower2Icon, GlassWaterIcon, HelpCircleIcon, NotebookPenIcon, SproutIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 function CommentDrawer({
@@ -101,8 +101,11 @@ export default function Home() {
 
   const [toHarvestDuration, setToHarvestDuration] = useState<number>(0);
   const [waterKeepDuration, setWaterKeepDuration] = useState<number>(0);
-
   const [goingToharvestTimeResult, setGoingToHarvestTimeResult] = useState<ClacResult2 | null>(null);
+
+  const [planHarvestTime, setPlanHarvestTime] = useState<{ hour: number, minute: number }>({ hour: 0, minute: 0 });
+  const [planHarvestTimeResult, setPlanHarvestTimeResult] = useState<ClacResult1 | null>(null);
+
 
   const { histories, addHistory, addComment } = useHistory();
   const [commentDrawerOpen, setCommentDrawerOpen] = useState<boolean>(false);
@@ -215,6 +218,47 @@ export default function Home() {
     addHistory(history);
   };
 
+  const calculatePlanHarvestTime = () => {
+    const baseDate = new Date();
+    baseDate.setHours(planHarvestTime.hour);
+    baseDate.setMinutes(planHarvestTime.minute);
+    const fullWaterTime = new Date(baseDate);
+    fullWaterTime.setMinutes(fullWaterTime.getMinutes() - calculatedTime.realHarvestTime);
+
+    const oneWaterTime = new Date(baseDate);
+    oneWaterTime.setMinutes(oneWaterTime.getMinutes() - (selectedVegetable.harvestTime - Math.round(calculatedTime.waterKeepTime * 0.25)));
+
+    const twoWaterTime = new Date(oneWaterTime);
+    twoWaterTime.setMinutes(twoWaterTime.getMinutes() + Math.round(calculatedTime.waterKeepTime * 0.25));
+
+    const lastWaterTime = new Date(baseDate);
+    lastWaterTime.setMinutes(lastWaterTime.getMinutes() - Math.round(calculatedTime.waterKeepTime * 0.1));
+
+    const waterList = calcWaterList(calculatedTime.realHarvestTime, 0, calculatedTime.waterKeepTime);
+    const waterTimes = waterList.map((time) => {
+      const date = new Date(baseDate);
+      date.setMinutes(date.getMinutes() - time);
+      return date;
+    }).reverse();
+
+    const result: ClacResult1 = {
+      fullWaterTime,
+      oneWaterTime,
+      twoWaterTime,
+      lastWaterTime,
+      waterTimes,
+    };
+    setPlanHarvestTimeResult(result);
+
+    const history: ClacHistoryItem = {
+      type: 'R3',
+      result,
+      baseTime: baseDate,
+      vegetable: selectedVegetable.name,
+    };
+    addHistory(history);
+  };
+
   return (
     <main className="flex w-full min-h-screen flex-col items-center">
       <div className="flex flex-col items-stretch gap-y-4 w-full max-w-3xl p-4">
@@ -298,7 +342,7 @@ export default function Home() {
           </DataCeil>
         </div>
         <h2 className="flex items-center text-lg p-1 rounded bg-slate-100 mt-4">
-          <AlarmClockCheckIcon className="mr-1 w-6 h-6 text-slate-500" />
+          <SproutIcon className="mr-1 w-6 h-6 text-slate-500" />
           <span>计算新种收获时间（R1）</span>
         </h2>
         <div>选择基准时间</div>
@@ -320,7 +364,7 @@ export default function Home() {
           <R1Data result={harvestTimeResult} />
         )}
         <h2 className="flex items-center text-lg p-1 rounded bg-slate-100 mt-4">
-          <AlarmClockIcon className="mr-1 w-6 h-6 text-slate-500" />
+          <Flower2Icon className="mr-1 w-6 h-6 text-slate-500" />
           <span>计算在途收获时间（R2）</span>
         </h2>
         <div className="flex flex-col items-start gap-y-2 sm:flex-row sm:items-center sm:gap-x-2">
@@ -340,6 +384,23 @@ export default function Home() {
         {goingToharvestTimeResult && (
           <R2Data result={goingToharvestTimeResult} />
         )}
+        <h2 className="flex items-center text-lg p-1 rounded bg-slate-100 mt-4">
+          <BeanIcon className="mr-1 w-6 h-6 text-slate-500" />
+          <span>计算收获倒推时间（R3）</span>
+        </h2>
+        <div className="flex flex-col items-start gap-y-2 sm:flex-row sm:items-center sm:gap-x-2">
+          <div className="flex items-center gap-x-2">
+            <Label>计划收获时间</Label>
+            <TimeInput mode="time" onTimeChange={setPlanHarvestTime} />
+          </div>
+        </div>
+        <Button onClick={calculatePlanHarvestTime}>
+          <CalculatorIcon className='w-4 h-4 mr-1' />
+          <span>计算</span>
+        </Button>
+        {planHarvestTimeResult && (
+          <R3Data result={planHarvestTimeResult} />
+        )}
         {histories.length > 0 && (
           <>
             <CommentDrawer
@@ -355,19 +416,59 @@ export default function Home() {
             {histories.map((history, i) => {
               return (
                 <div key={history.baseTime.toString()} className="flex flex-col items-stretch gap-y-2 pb-2 border-b">
-                  <h3>{`${history.vegetable}(${history.type}@${formatDate(history.baseTime)})`}</h3>
+                  {function() {
+                    switch (history.type) {
+                      case 'R1':
+                        return (
+                          <>
+                            <h3 className="font-medium flex items-center">
+                              <SproutIcon className="w-5 h-5 text-slate-500" />
+                              <span>{`新种收获计算: ${history.vegetable}`}</span>
+                            </h3>
+                            <span className="-mt-2">{`种下时间: ${formatDate(history.baseTime)}`}</span>
+                          </>
+                        );
+                      case 'R2':
+                        return (
+                          <>
+                            <h3 className="font-medium flex items-center">
+                              <Flower2Icon className="w-5 h-5 text-slate-500" />
+                              <span>{`在途收获计算: ${history.vegetable}`}</span>
+                            </h3>
+                            <span className="-mt-2">{`计算时间: ${formatDate(history.baseTime)}`}</span>
+                          </>
+                        );
+                      case 'R3':
+                        return (
+                          <>
+                            <h3 className="font-medium flex items-center">
+                              <BeanIcon className="w-5 h-5 text-slate-500" />
+                              <span>{`收获倒推计算: ${history.vegetable}`}</span>
+                            </h3>
+                            <span className="-mt-2">{`计划收获时间: ${formatDateToHHmm(history.baseTime)}`}</span>
+                          </>
+                        );
+                      default:
+                        return null;
+                    }
+                  }()}
                   <Comment index={i} comment={history.comment} onCommentClick={openCommentDrawer} />
                   {function() {
-                    if (history.type === 'R1') {
-                      return (
-                        <R1Data result={history.result} />
-                      );
-                    } else if (history.type === 'R2') {
-                      return (
-                        <R2Data result={history.result} />
-                      );
-                    } else {
-                      return null;
+                    switch (history.type) {
+                      case 'R1':
+                        return (
+                          <R1Data result={history.result} />
+                        );
+                      case 'R2':
+                        return (
+                          <R2Data result={history.result} />
+                        );
+                      case 'R3':
+                        return (
+                          <R3Data result={history.result} />
+                        );
+                      default:
+                        return null;
                     }
                   }()}
                 </div>

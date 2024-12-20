@@ -13,7 +13,7 @@ export function DataCeil({ title, children }: { title: React.ReactNode; children
   );
 }
 
-function WaterTimeList({ className, data }: { className?: string, data: Date[] }) {
+function WaterTimeList({ className, data, noDay }: { className?: string, data: Date[], noDay?: boolean }) {
   return (
     <Popover>
       <PopoverTrigger className={clsx('cursor-pointer', className)} asChild>
@@ -25,7 +25,7 @@ function WaterTimeList({ className, data }: { className?: string, data: Date[] }
           {data.map((item, index) => (
             <div className="text-slate-600 font-mono" key={index}>
               <span className="mr-2">{index + 1}</span>
-              <TimerTrigger toTime={item}/>
+              <TimerTrigger toTime={item} noDay={noDay}/>
             </div>
           ))}
         </div>
@@ -86,6 +86,36 @@ export function R2Data({ result }: { result: ClacResult2 }) {
       )}
       <DataCeil title='倒二浇时间'>
         <TimerTrigger toTime={result.lastWaterTime}/>
+      </DataCeil>
+    </div>
+  )
+}
+
+export function R3Data({ result }: { result: ClacResult1 }) {
+  return (
+    <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <DataCeil
+        title={(
+          <div className="flex items-center gap-x-1">
+            <span className="font-bold rainbow-text">满浇种下时间</span>
+            {result.waterTimes != null && (
+              <WaterTimeList data={result.waterTimes} noDay/>
+            )}
+          </div>
+        )}
+      >
+        <TimerTrigger toTime={result.fullWaterTime} noDay/>
+      </DataCeil>
+      <DataCeil title='只浇第一水种下时间'>
+        <TimerTrigger toTime={result.oneWaterTime} noDay/>
+      </DataCeil>
+      {result.twoWaterTime != null && (
+        <DataCeil title='只浇头尾水种下时间'>
+          <TimerTrigger toTime={result.twoWaterTime} noDay/>
+        </DataCeil>
+      )}
+      <DataCeil title='倒二浇时间'>
+        <TimerTrigger toTime={result.lastWaterTime} noDay/>
       </DataCeil>
     </div>
   )
