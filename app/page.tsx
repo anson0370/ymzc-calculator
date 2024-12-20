@@ -236,10 +236,10 @@ export default function Home() {
 
     const waterList = calcWaterList(calculatedTime.realHarvestTime, 0, calculatedTime.waterKeepTime);
     const waterTimes = waterList.map((time) => {
-      const date = new Date(baseDate);
-      date.setMinutes(date.getMinutes() - time);
+      const date = new Date(fullWaterTime);
+      date.setMinutes(date.getMinutes() + time);
       return date;
-    }).reverse();
+    });
 
     const result: ClacResult1 = {
       fullWaterTime,
